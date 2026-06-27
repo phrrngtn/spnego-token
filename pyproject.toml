@@ -1,0 +1,26 @@
+[build-system]
+requires = ["scikit-build-core>=0.10", "nanobind>=2.4"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "spnego-token"
+version = "0.1.0"
+description = "Curl-free SPNEGO (RFC 4178/4559) token generator for preemptive authentication"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Paul Harrington" }]
+requires-python = ">=3.9"
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: C++",
+  "Topic :: Security",
+]
+
+[project.optional-dependencies]
+# Reference implementation to cross-check against. The Kerberos backend on Unix needs
+# pyspnego[kerberos] (pulls python-gssapi); plain pyspnego is enough on Windows/SSPI.
+test = ["pyspnego"]
+
+[tool.scikit-build]
+minimum-version = "0.10"
+build-dir = "build/{wheel_tag}"
