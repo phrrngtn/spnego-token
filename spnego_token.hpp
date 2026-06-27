@@ -34,6 +34,16 @@ TokenResult GenerateTokenForUrl(const std::string &url, bool allow_insecure = fa
 std::string DescribeTokenForUrl(const std::string &url, bool allow_insecure = false,
                                 const std::string &service = "HTTP");
 
+//! Property-bag entry-point: build a token from a JSON config object. Strict by design —
+//! the interpretation is deliberately unforgiving so behavior stays easy to reason about.
+//! Recognized keys (anything else is rejected):
+//!   - exactly one of "url" (http-style; host extracted) OR "host" (bare hostname)
+//!   - "service"        (optional, default "HTTP")
+//!   - "allow_insecure" (optional bool, default false; only meaningful with "url")
+//! e.g. {"url":"https://h/","service":"LDAP"} or {"host":"h","service":"cifs"}.
+//! Throws on malformed JSON, an unknown key, or a missing/ambiguous host. (Uses nlohmann::json.)
+TokenResult GenerateTokenFromConfig(const std::string &config_json);
+
 //! True if a security provider (GSS-API or SSPI) is available on this system.
 bool IsAvailable();
 

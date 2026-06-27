@@ -57,6 +57,7 @@ built yet.)
 | `GenerateTokenForHost(host, service="HTTP")` | Primitive — SPN `<service>/<host>`, any Kerberos service. |
 | `GenerateTokenForUrl(url, allow_insecure=false, service="HTTP")` | URL convenience — extracts host (gates plaintext `http://` unless `allow_insecure`). |
 | `DescribeTokenForUrl(url, allow_insecure=false, service="HTTP")` | **Debug** — never throws; returns a JSON blob (inputs, SPN, provider, token-or-error). |
+| `GenerateTokenFromConfig(json)` | Property-bag — strict JSON config `{"url"\|"host", "service", "allow_insecure"}`; unknown keys / ambiguous host raise. |
 | `IsAvailable()` / `ProviderName()` / `LibraryName()` | Provider introspection. |
 
 All return a `TokenResult { token, url, hostname, spn, provider, library }` (except the
@@ -100,7 +101,8 @@ uv run --extra test python tests/test_compare_pyspnego.py https://service.exampl
 
 Exposes `generate_token_for_host(host, service="HTTP")`,
 `generate_token_for_url(url, allow_insecure=False, service="HTTP")`,
-`describe_token_for_url(...) -> json`, `is_available()`, `provider_name()`, `library_name()`.
+`describe_token_for_url(...) -> json`, `generate_token_from_config(json)`, `is_available()`,
+`provider_name()`, `library_name()`.
 
 ## Acknowledgments
 

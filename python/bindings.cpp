@@ -35,6 +35,9 @@ NB_MODULE(spnego_token, m) {
 	      nb::arg("service") = "HTTP",
 	      "Debug: never raises. Returns a JSON string with the inputs, the targeted service name (SPN), "
 	      "provider/library, and the token (or an error). Pair with json.loads().");
+	m.def("generate_token_from_config", &spnego::GenerateTokenFromConfig, nb::arg("config_json"),
+	      "Property-bag: build a token from a strict JSON config object "
+	      "({\"url\"|\"host\", \"service\", \"allow_insecure\"}). Unknown keys / ambiguous host raise.");
 	m.def("is_available", &spnego::IsAvailable, "True if a security provider (GSS-API/SSPI) is loadable.");
 	m.def("provider_name", &spnego::ProviderName, "Name of the active security provider.");
 	m.def("library_name", &spnego::LibraryName, "Path/name of the loaded security library (Unix).");

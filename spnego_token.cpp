@@ -490,4 +490,33 @@ std::string DescribeTokenForUrl(const std::string &url, bool allow_insecure, con
 	return j.dump(2);
 }
 
+// ---------------------------------------------------------------------------
+// Property-bag entry-point: a JSON config object -> token. Strict interpretation
+// (unknown keys / ambiguous host are hard errors) so the "magic" stays minimal.
+// ---------------------------------------------------------------------------
+
+TokenResult GenerateTokenFromConfig(const std::string &config_json) {
+	auto j = nlohmann::json::parse(config_json); // throws on malformed JSON
+	if (!j.is_object()) {
+		throw std::runtime_error("spnego config must be a JSON object");
+	}
+	for (auto it = j.begin(); it != j.end(); ++it) {
+		const std::string &k = it.key();
+		if (k != "url" && k != "host" && k != "service" && k != "allow_insecure") {
+			throw std::runtime_error("spnego config: unknown key '" + k + "'");
+		}
+	}
+	const std::string service = j.value("service", std::string("HTTP"));
+	const bool has_url = j.contains("url");
+	const bool has_host = j.contains("host");
+	if (has_url == has_host) {
+		throw std::runtime_error("spnego config: provide exactly one of 'url' or 'host'");
+	}
+	if (has_url) {
+		const bool allow_insecure = j.value("allow_insecure", false);
+		return GenerateTokenForUrl(j.at("url").get<std::string>(), allow_insecure, service);
+	}
+	return GenerateTokenForHost(j.at("host").get<std::string>(), service);
+}
+
 } // namespace spnego
