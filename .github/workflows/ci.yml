@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    paths-ignore: ['**.md', 'LICENSE']
+  pull_request:
+    paths-ignore: ['**.md', 'LICENSE']
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build & smoke (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive # pulls the nested nlohmann/json the JSON paths need
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Build & install (nanobind / scikit-build-core)
+        run: |
+          uv venv --python 3.12
+          uv pip install .
+
+      # Deterministic build verification — no Kerberos ticket required. Exercises the
+      # recursive submodule (json), the C++ build (GSS dlopen / SSPI + secur32), the import,
+      # and the pure SPN-construction path of the JSON describe entry-point.
+      - name: Smoke
+        shell: bash
+        run: |
+          uv run python -c "import json, spnego_token as s; print('provider:', s.provider_name(), '| available:', s.is_available()); b = json.loads(s.describe_token_for_url('https://example.com/')); assert b['spn'] == 'HTTP/example.com', b; assert b['service_name'] == 'HTTP@example.com', b; print('smoke ok')"
